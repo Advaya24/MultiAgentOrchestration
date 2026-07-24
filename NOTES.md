@@ -2,7 +2,16 @@
 
 ## Where I went deep and why
 
-I focused on durable orchestration/handoffs and bounded worker context.
+I chose the research-brief problem partly because it makes the orchestration
+problem concrete: discovery, extraction, assessment, and writing naturally
+contain both parallel and dependent work. I have been working on orchestration
+and handoffs in different forms for more than six months, and this is the part
+of agent systems I find most interesting. As horizons grow, one agent is
+unlikely to handle every step well—even with strong context management—because
+some work should be parallelized and later reconciled.
+
+I therefore focused on durable orchestration/handoffs and bounded worker
+context.
 
 - **Durable handoffs:** tasks and artifacts survive worker exits, retries, and
   later revision. This is the layer that keeps a multi-step run coherent rather
