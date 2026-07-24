@@ -1,3 +1,11 @@
+Specs.md
+
+# Local collaboration activity log (intentionally untracked)
+.local/work-log.md
+
+# Local task-board run output (intentionally untracked)
+runs/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

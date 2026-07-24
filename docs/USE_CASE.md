@@ -12,6 +12,12 @@ The exercise is about running the research over a sufficiently large and messy b
 
 Editable source: [conceptual_research_workflow.d2](../artifacts/conceptual_research_workflow.d2).
 
+## Execution Architecture
+
+The conceptual flow above describes the research problem. The concrete
+task-board swarm architecture and an end-to-end research execution trace are
+documented in [Task-Board Swarm Architecture](ARCHITECTURE.md).
+
 ## Research Question
 
 The specific question will be chosen before a run. It should be:

@@ -1,0 +1,80 @@
+direction: down
+
+request: {
+  label: "Run request"
+  shape: hexagon
+}
+
+team_lead: {
+  label: "Team lead\nprioritize, validate, create work"
+  shape: person
+}
+
+scheduler: {
+  label: "Local scheduler\nclaim leases and state transitions"
+  shape: rectangle
+}
+
+task_files: {
+  label: "Markdown task files\nauthoritative task state"
+  shape: stored_data
+}
+
+board: {
+  label: "board.md\ngenerated human view"
+  shape: document
+}
+
+capabilities: {
+  label: "Capability registry\npersona, skills, tools, context budget"
+  shape: document
+}
+
+worker_pool: {
+  label: "Elastic short-lived workers\nclaim compatible ready tasks\nwrite compact outputs, then exit"
+  shape: cloud
+}
+
+artifacts: {
+  label: "Immutable artifact store\nevidence, claims, drafts, reviews"
+  shape: stored_data
+}
+
+mechanical_checks: {
+  label: "Mechanical checks\nschema, IDs, dependencies"
+  shape: rectangle
+}
+
+review_tasks: {
+  label: "Risk-based review tasks\nevidence, conflicts, final brief"
+  shape: rectangle
+}
+
+recovery: {
+  label: "Recovery\nlease expires: reassign once\nsecond failure: blocked lead review"
+  shape: rectangle
+}
+
+revision: {
+  label: "Targeted revision\nconflict verdict stales only dependents"
+  shape: rectangle
+}
+
+request -> team_lead: opens run
+team_lead -> scheduler: admits and prioritizes work
+team_lead -> task_files: creates tasks
+scheduler -> task_files: single-writer updates
+task_files -> board: renders status
+task_files -> worker_pool: ready task envelope
+capabilities -> worker_pool: selects profile
+worker_pool -> scheduler: claim or completion proposal
+worker_pool -> artifacts: immutable output
+artifacts -> mechanical_checks: validate output contract
+mechanical_checks -> review_tasks: high-risk artifacts
+review_tasks -> team_lead: accept or revise
+team_lead -> scheduler: accept, block, or enqueue follow-up
+scheduler -> recovery: expired lease
+recovery -> task_files: reassignment or blocked task
+artifacts -> revision: new contradictory evidence
+revision -> task_files: conflict and revision tasks
+revision -> artifacts: preserve provenance

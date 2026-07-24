@@ -7,7 +7,8 @@
 - Python client: `google-genai`
 - Credential: `GEMINI_API_KEY`
 - Model in the example: `models/gemini-3-flash-preview`
-- Built-in tool: `google_search`
+- External web discovery: sandboxed `ddg-search` CLI exposed as an explicit
+  Strands Python tool
 - Generation controls: temperature, output-token limit, top-p, and thinking level
 
 ## Example Shape
@@ -19,7 +20,7 @@ client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 interaction = client.interactions.create(
     model="models/gemini-3-flash-preview",
     input="<research request>",
-    tools=[{"type": "google_search"}],
+    tools=[ddg_web_search],
     generation_config={...},
 )
 ```

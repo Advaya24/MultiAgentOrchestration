@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "multi-agent-orchestration"
+version = "0.1.0"
+description = "A durable, bounded-context multi-agent research workflow."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "google-genai>=2.14,<3",
+    "matplotlib>=3.9,<4",
+    "pydantic>=2.0,<3",
+    "python-dotenv>=1.2,<2",
+    "PyYAML>=6.0,<7",
+    "strands-agents[otel,mistral]>=1.48,<2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0,<9",
+]
+
+[project.scripts]
+base-agent = "src.agents.base_agent:main"
+
+[tool.setuptools]
+packages = ["src", "src.agents", "src.orchestrator", "src.state", "src.workers"]
+
+[tool.setuptools.package-data]
+"src.agents" = ["skills/*/SKILL.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
