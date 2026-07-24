@@ -1,6 +1,6 @@
 # Implementation Focus and Coverage
 
-`Specs.md` asks us to choose one or two areas to explore deeply while still
+The assignment brief asks us to choose one or two areas to explore deeply while still
 making the rest coherent. The implementation is deepest on orchestration and
 handoffs, backed by durable shared state and deliberately bounded context.
 Planning/revision and sandboxed execution are also substantial supporting

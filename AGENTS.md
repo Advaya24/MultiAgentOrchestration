@@ -2,15 +2,15 @@
 
 ## Project Structure & Module Organization
 
-This repository is an early scaffold for the multi-agent orchestration exercise described in `Specs.md`. Keep the repository root limited to project documentation and configuration:
+This repository is an early scaffold for the multi-agent orchestration exercise. Keep the repository root limited to project documentation and configuration:
 
 - `README.md`: runnable setup, chosen goal, and architecture sketch.
-- `Specs.md`: assignment constraints and evaluation criteria; treat it as the product brief.
+- `.local/Specs.md`: local assignment constraints and evaluation criteria; treat it as the product brief, but do not submit it.
 - `NOTES.md`: design tradeoffs, scope cuts, and future work (add when implementation starts).
 
-`Specs.md` is intentionally local and ignored. Do not stage, commit, or change its ignore/tracking status without the user's explicit approval. More generally, do not alter `.gitignore` rules that change a file's tracking visibility without explicit approval.
+`.local/Specs.md` is intentionally local and ignored. Do not stage, commit, or change its ignore/tracking status without the user's explicit approval. More generally, do not alter `.gitignore` rules that change a file's tracking visibility without explicit approval.
 
-Place application code in `src/`, grouped by responsibility (for example, `src/agents/`, `src/orchestrator/`, `src/workers/`, and `src/state/`). Keep `scripts/` for operational helpers and one-off development commands, not application code. Put tests in `tests/`, mirroring source modules, and use `artifacts/` or `logs/` only for reproducible generated run output. Do not commit secrets, virtual environments, caches, or local databases.
+Place application code in `src/`, grouped by responsibility (for example, `src/agents/`, `src/orchestrator/`, `src/workers/`, and `src/state/`). Put optional standalone demonstrations in `examples/`. Local operator helpers belong in `.local/scripts/`, not the submission surface. Put tests in `tests/`, mirroring source modules, and use `artifacts/` or `logs/` only for reproducible generated run output. Do not commit secrets, virtual environments, caches, or local databases.
 
 ## Build, Test, and Development Commands
 
@@ -27,10 +27,10 @@ Use `python -m ...` so the active virtual environment is unambiguous. If a forma
 
 ## Work Logging
 
-Record material implementation actions, decisions, assumptions, and verification results in the local work log with `sh scripts/log_work.sh`. Use a concise, outcome-oriented entry before ending a work session and after meaningful changes in direction, such as selecting an architecture, diagnosing a failure, changing a recovery strategy, or completing a test run.
+Record material implementation actions, decisions, assumptions, and verification results in the local work log with `sh .local/scripts/log_work.sh`. Use a concise, outcome-oriented entry before ending a work session and after meaningful changes in direction, such as selecting an architecture, diagnosing a failure, changing a recovery strategy, or completing a test run.
 
 ```sh
-sh scripts/log_work.sh "Decision: use versioned evidence records for agent handoffs"
+sh .local/scripts/log_work.sh "Decision: use versioned evidence records for agent handoffs"
 ```
 
 The script writes to `.local/work-log.md`; treat it as local operational history. Do not commit it, and never put secrets, credentials, private data, or large raw tool output in it. Keep reproducible runtime logs in `logs/` only when they are useful project artifacts, and sanitize them before sharing.
