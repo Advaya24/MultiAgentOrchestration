@@ -14,9 +14,8 @@ python -m pytest
 
 Every executor, including deterministic fixture executors, requires a running
 Docker daemon and a prepared sandbox container supplied through
-`WORKER_SANDBOX_CONTAINER`. Live Gemini mode requires a local `GEMINI_API_KEY`;
-live Mistral mode requires `MISTRAL_API_KEY`. Fixture mode does not call a model
-or external research tools.
+`WORKER_SANDBOX_CONTAINER`. Live Gemini mode requires a local `GEMINI_API_KEY`.
+Fixture mode does not call a model or external research tools.
 The image includes the `ddg-search` and `page-dump` CLIs used by the explicit,
 sandboxed web-discovery and web-fetch tools; they need no search API key.
 
@@ -55,7 +54,6 @@ Pass `--run-dir` only when you need a specific location.
 
 ```sh
 .venv/bin/python -m src.cli run --request-file request.md --mode gemini
-.venv/bin/python -m src.cli run --request-file request.md --mode mistral
 .venv/bin/python -m src.cli inspect --run-dir runs/run-YYYYMMDDTHHMMSSffffffPT
 ```
 
