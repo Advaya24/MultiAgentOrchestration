@@ -54,6 +54,9 @@ choices rather than trying to be separate broad areas of depth.
   time in the three-hour limit to inspect their context-management behavior
   deeply enough; shared context can otherwise become rigid or unintuitive. A
   narrowly scoped revision task is the first place I would evaluate a Swarm.
+- Worker profiles are selected manually from a small, approved list in this
+  version. That made early runs easy to test and inspect, but it also makes the
+  system rigid: every new kind of work needs a profile change in code.
 - Docker sandboxing is applied to workers and their explicit tools, while the
   host runner stays outside the sandbox and has no Docker-socket authority.
 - Standard OpenTelemetry plus raw local spans, worker logs, a task graph, and a
@@ -62,22 +65,17 @@ choices rather than trying to be separate broad areas of depth.
 
 ## Scope cuts and what I would build next
 
+- **Dynamic skill discovery:** this is the first feature I would add. Remove
+  the fixed worker profiles and let an agent inspect a skill catalog, choose
+  the skills that fit its assigned task, and record that choice in the task
+  handoff. Keep simple task-level limits and an allowlist for sensitive tools,
+  but do not require a code change just to support a new combination of skills.
 - **Citation-grade briefs:** persist source metadata and exact supporting
   excerpts, link claims to citation IDs, and render inline citations plus a
-  bibliography linked to original URLs or DOIs. This is the immediate next
-  product step because the current brief can still expose only an internal
-  artifact ID.
+  bibliography linked to original URLs or DOIs. The current brief can still
+  expose only an internal artifact ID.
 - **Provenance-driven invalidation:** use those claim-to-source links to find
   the exact claims and brief sections affected by a later conflict verdict.
 - **Operational scale:** retain the task/artifact contracts but replace the
   single-host Markdown/polling runner with transactional claims in a durable
   queue and database. Add per-run token/cost budgets at the same time.
-
-## Coding tools
-
-I used coding assistance to explore coordination options, draft and revise the
-architecture and D2 diagrams, implement the scheduler/worker contracts, inspect
-live traces, diagnose failures, and add regression tests. The final decisions
-were kept only when they supported the two focus areas above; generated run
-data, local credentials, assignment materials, and operational notes remain
-outside the submitted repository.
