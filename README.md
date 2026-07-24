@@ -6,9 +6,7 @@ The system produces a research brief by decomposing a request into durable,
 dependency-aware tasks. Workers exchange named artifacts rather than sharing a
 growing conversation.
 
-```text
-request → lead plans → scheduler queue → parallel workers → artifacts / brief
-```
+![Minimal task-board architecture sketch](artifacts/readme_architecture_sketch.svg)
 
 The scheduler is the only writer of durable task state. Each worker receives a
 small task envelope and only the upstream artifacts named in that envelope.

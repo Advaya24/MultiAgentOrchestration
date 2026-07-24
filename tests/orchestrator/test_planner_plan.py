@@ -1,28 +1,28 @@
-"""Deterministic coverage for the team-lead proposal boundary."""
+"""Deterministic coverage for the team-planner proposal boundary."""
 
 from __future__ import annotations
 
 import pytest
 
-from src.orchestrator.lead import FixtureLeadExecutor
+from src.orchestrator.planner import FixturePlannerExecutor
 from src.orchestrator.scheduler import Scheduler
-from src.state.models import ArtifactDraft, CompletionProposal, LeadPlan, PlannedTaskDraft, TaskRecord, TaskReform, TaskStatus
+from src.state.models import ArtifactDraft, CompletionProposal, PlannerPlan, PlannedTaskDraft, TaskRecord, TaskReform, TaskStatus
 from src.state.run_store import RunStore
 
 
-def _claimed_lead(scheduler: Scheduler) -> TaskRecord:
+def _claimed_planner(scheduler: Scheduler) -> TaskRecord:
     scheduler.create_task(
         TaskRecord(id="T-001", type="plan_research", instruction="Compare two durable orchestration designs.")
     )
-    return scheduler.claim_task("T-001", "lead-1")
+    return scheduler.claim_task("T-001", "planner-1")
 
 
-def test_fixture_lead_materializes_parallel_discovery_tasks(tmp_path) -> None:
+def test_fixture_planner_materializes_parallel_discovery_tasks(tmp_path) -> None:
     store = RunStore(tmp_path / "run")
     scheduler = Scheduler(store)
-    lead_task = _claimed_lead(scheduler)
+    planner_task = _claimed_planner(scheduler)
 
-    proposal = FixtureLeadExecutor(sandbox=object()).execute(store, lead_task, "run")
+    proposal = FixturePlannerExecutor(sandbox=object()).execute(store, planner_task, "run")
     scheduler.accept_proposal(proposal)
 
     tasks = {task.id: task for task in store.list_tasks()}
@@ -31,18 +31,18 @@ def test_fixture_lead_materializes_parallel_discovery_tasks(tmp_path) -> None:
     assert tasks["T-003"].type == "discover_sources"
     assert tasks["T-002"].status is TaskStatus.READY
     assert tasks["T-003"].status is TaskStatus.READY
-    assert "lead_plan_materialized" in (store.run_dir / "events.md").read_text(encoding="utf-8")
+    assert "planner_plan_materialized" in (store.run_dir / "events.md").read_text(encoding="utf-8")
 
 
-def test_scheduler_translates_lead_local_dependencies(tmp_path) -> None:
+def test_scheduler_translates_planner_local_dependencies(tmp_path) -> None:
     store = RunStore(tmp_path / "run")
     scheduler = Scheduler(store)
-    lead_task = _claimed_lead(scheduler)
+    planner_task = _claimed_planner(scheduler)
     proposal = CompletionProposal(
-        task_id=lead_task.id,
-        attempt=lead_task.attempt,
+        task_id=planner_task.id,
+        attempt=planner_task.attempt,
         summary="Plan sequential research.",
-        lead_plan=LeadPlan(
+        planner_plan=PlannerPlan(
             summary="Sequential plan.",
             tasks=[
                 PlannedTaskDraft(
@@ -72,13 +72,13 @@ def test_scheduler_translates_lead_local_dependencies(tmp_path) -> None:
 def test_scheduler_hands_dependency_artifacts_to_ready_downstream_task(tmp_path) -> None:
     store = RunStore(tmp_path / "run")
     scheduler = Scheduler(store)
-    lead_task = _claimed_lead(scheduler)
+    planner_task = _claimed_planner(scheduler)
     scheduler.accept_proposal(
         CompletionProposal(
-            task_id=lead_task.id,
-            attempt=lead_task.attempt,
+            task_id=planner_task.id,
+            attempt=planner_task.attempt,
             summary="Plan sequential research.",
-            lead_plan=LeadPlan(
+            planner_plan=PlannerPlan(
                 summary="Sequential plan.",
                 tasks=[
                     PlannedTaskDraft(
@@ -115,15 +115,15 @@ def test_scheduler_hands_dependency_artifacts_to_ready_downstream_task(tmp_path)
     assert '"input_artifacts": ["A-001"]' in events
 
 
-def test_scheduler_rejects_cyclic_lead_plan_without_writing_tasks(tmp_path) -> None:
+def test_scheduler_rejects_cyclic_planner_plan_without_writing_tasks(tmp_path) -> None:
     store = RunStore(tmp_path / "run")
     scheduler = Scheduler(store)
-    lead_task = _claimed_lead(scheduler)
+    planner_task = _claimed_planner(scheduler)
     proposal = CompletionProposal(
-        task_id=lead_task.id,
-        attempt=lead_task.attempt,
+        task_id=planner_task.id,
+        attempt=planner_task.attempt,
         summary="Invalid cycle.",
-        lead_plan=LeadPlan(
+        planner_plan=PlannerPlan(
             summary="Invalid cycle.",
             tasks=[
                 PlannedTaskDraft(
@@ -174,7 +174,7 @@ def test_scheduler_opens_reform_review_after_artifact_less_worker_completion(tmp
     assert review.status is TaskStatus.READY
 
 
-def test_scheduler_requeues_task_from_lead_reform(tmp_path) -> None:
+def test_scheduler_requeues_task_from_planner_reform(tmp_path) -> None:
     store = RunStore(tmp_path / "run")
     scheduler = Scheduler(store)
     scheduler.create_task(
@@ -189,13 +189,13 @@ def test_scheduler_requeues_task_from_lead_reform(tmp_path) -> None:
     scheduler.accept_proposal(
         CompletionProposal(task_id=first_attempt.id, attempt=first_attempt.attempt, summary="No durable handoff.")
     )
-    review = scheduler.claim_task("T-002", "lead-1")
+    review = scheduler.claim_task("T-002", "planner-1")
     scheduler.accept_proposal(
         CompletionProposal(
             task_id=review.id,
             attempt=review.attempt,
             summary="Re-form the task with its source handoff.",
-            lead_plan=LeadPlan(
+            planner_plan=PlannerPlan(
                 summary="Re-form the task.",
                 reforms=[
                     TaskReform(
@@ -229,7 +229,7 @@ def test_scheduler_reassigns_immediately_after_first_worker_exit_failure(tmp_pat
     assert "worker_failure_reassigned" in (store.run_dir / "events.md").read_text(encoding="utf-8")
 
 
-def test_scheduler_blocks_second_worker_exit_failure_and_opens_lead_review(tmp_path) -> None:
+def test_scheduler_blocks_second_worker_exit_failure_and_opens_planner_review(tmp_path) -> None:
     store = RunStore(tmp_path / "run")
     scheduler = Scheduler(store)
     scheduler.create_task(TaskRecord(id="T-001", type="discover_sources", instruction="Discover sources."))
@@ -240,7 +240,7 @@ def test_scheduler_blocks_second_worker_exit_failure_and_opens_lead_review(tmp_p
     scheduler.record_worker_exit("T-001", return_code=1)
 
     assert store.read_task("T-001").status is TaskStatus.BLOCKED
-    assert store.read_task("T-002").type == "lead_review"
+    assert store.read_task("T-002").type == "planner_review"
 
 
 def test_worker_exit_event_links_to_attempt_log(tmp_path) -> None:

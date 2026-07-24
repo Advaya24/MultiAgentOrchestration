@@ -5,9 +5,11 @@ request: {
   shape: hexagon
 }
 
-team_lead: {
-  label: "Team lead\nproposes bounded plans or task reforms"
+team_planner: {
+  label: "Team planner\nplan proposals\nand task reforms"
   shape: rectangle
+  width: 160
+  height: 110
 }
 
 scheduler: {
@@ -41,12 +43,12 @@ artifacts: {
 }
 
 review_tasks: {
-  label: "Blocked-task lead review\nre-form one failed task"
+  label: "Blocked-task planner review\nre-form one failed task"
   shape: rectangle
 }
 
 recovery: {
-  label: "Recovery\nlease expires: reassign once\nsecond failure: blocked lead review"
+  label: "Recovery\nlease expires: reassign once\nsecond failure: blocked planner review"
   shape: rectangle
 }
 
@@ -55,8 +57,8 @@ revision: {
   shape: rectangle
 }
 
-request -> team_lead: opens run
-team_lead -> scheduler: proposes plan or reform
+request -> team_planner: opens run
+team_planner -> scheduler: proposes plan or reform
 scheduler -> task_files: single-writer updates
 task_files -> board: renders status
 task_files -> worker_pool: ready task envelope
@@ -64,7 +66,7 @@ capabilities -> worker_pool: selects profile
 worker_pool -> scheduler: claim or completion proposal
 scheduler -> artifacts: accepted immutable output
 scheduler -> review_tasks: blocked task or invalid completion
-review_tasks -> team_lead: reform request
+review_tasks -> team_planner: reform request
 scheduler -> recovery: expired lease
 recovery -> scheduler: reassign or block
 artifacts -> revision: new contradictory evidence

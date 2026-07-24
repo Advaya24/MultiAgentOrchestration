@@ -69,7 +69,7 @@ class TaskDraft(BaseModel):
 
 
 class PlannedTaskDraft(BaseModel):
-    """Lead-proposed task expressed with local keys, not durable IDs."""
+    """Planner-proposed task expressed with local keys, not durable IDs."""
 
     key: str
     type: str
@@ -81,8 +81,8 @@ class PlannedTaskDraft(BaseModel):
     review_required: bool = False
 
 
-class LeadPlan(BaseModel):
-    """Untrusted lead output that the scheduler validates before persistence."""
+class PlannerPlan(BaseModel):
+    """Untrusted planner output that the scheduler validates before persistence."""
 
     summary: str
     tasks: list[PlannedTaskDraft] = Field(default_factory=list)
@@ -90,7 +90,7 @@ class LeadPlan(BaseModel):
 
 
 class TaskReform(BaseModel):
-    """A lead-approved replacement envelope for one blocked task."""
+    """A planner-approved replacement envelope for one blocked task."""
 
     target_task_id: str
     instruction: str
@@ -108,5 +108,5 @@ class CompletionProposal(BaseModel):
     summary: str
     artifacts: list[ArtifactDraft] = Field(default_factory=list)
     follow_up_tasks: list[TaskDraft] = Field(default_factory=list)
-    lead_plan: LeadPlan | None = None
+    planner_plan: PlannerPlan | None = None
     metrics: dict[str, int | float | str] = Field(default_factory=dict)

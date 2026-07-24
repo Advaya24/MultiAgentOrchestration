@@ -60,14 +60,14 @@ metadata is not a permission boundary. The registry constructs the actual
 `CompletionProposal` contains a status, compact handoff summary, artifact
 drafts, and optional follow-up task drafts. The scheduler performs mechanical
 validation and sends high-risk outputs to independent review before acceptance.
-Every completed non-lead task must include at least one artifact draft; an
-artifact-less completion is blocked and routed to lead review instead of
+Every completed non-planner task must include at least one artifact draft; an
+artifact-less completion is blocked and routed to planner review instead of
 silently becoming a broken downstream handoff.
 
-## Team-lead contract
+## Team-planner contract
 
-The team lead is a separate, short-lived Strands agent invoked only for
-`plan_research` and `lead_review` tasks. It has no application tools, no
+The team planner is a separate, short-lived Strands agent invoked only for
+`plan_research` and `planner_review` tasks. It has no application tools, no
 filesystem tools, and no authority to call scheduler methods. Its sole output
 is a structured plan: a compact rationale plus a bounded set of typed task
 drafts. Each draft has a stable local key, an allowed task type, required
@@ -77,21 +77,21 @@ dependency keys.
 The scheduler validates and materializes that plan. It rejects duplicate keys,
 unknown dependencies, dependency cycles, unsupported task types or
 capabilities, excessive fan-out, and input-artifact references not permitted
-by the lead task. It then assigns real task IDs, translates local dependency
-keys, persists the tasks, and records a `lead_plan_materialized` event. Thus a
+by the planner task. It then assigns real task IDs, translates local dependency
+keys, persists the tasks, and records a `planner_plan_materialized` event. Thus a
 model can propose work but cannot create, complete, re-prioritize, or cancel
 durable tasks directly.
 
-Fixture, Gemini, and Mistral leads share this contract. The fixture lead deterministically
+Fixture, Gemini, and Mistral planners share this contract. The fixture planner deterministically
 creates parallel discovery tasks, so lifecycle tests do not need a model or
-Docker daemon. The live lead receives a Docker sandbox for implementation
+Docker daemon. The live planner receives a Docker sandbox for implementation
 uniformity, though it is deliberately given no generic sandbox tools. It uses
 a fresh `Agent` with bounded turns/tokens and structured output; its prompt is
-limited to the lead task, permitted input artifact IDs, and the task catalog.
+limited to the planner task, permitted input artifact IDs, and the task catalog.
 
 ## Model providers and source provenance
 
-Live workers and the team lead default to `gemini-3.5-flash-lite` through
+Live workers and the team planner default to `gemini-3.5-flash-lite` through
 `GeminiModel`; `GEMINI_MODEL` remains a local override. Web-discovery workers
 receive two explicit Python tools: `ddg_web_search` and `web_fetch`. They invoke
 the
@@ -106,7 +106,7 @@ rationale, and source-family records. Retrieved contentâ€”not a search snippetâ€
 is required before it supports evidence or claims.
 
 Live workers use permissive execution budgets: up to 64 model turns and a
-64,000-token cumulative budget per task. The lead receives 16 turns and a
+64,000-token cumulative budget per task. The planner receives 16 turns and a
 16,000-token cumulative budget. These limits leave room for multi-step
 retrieval and structured handoff while retaining an eventual hard stop. The
 host runner allows a one-hour idle window for a full live DAG; individual tool
@@ -188,7 +188,7 @@ Markdown, while the immutable artifact remains the durable handoff record.
 
 The runner reports a nonzero worker-process exit to the scheduler immediately:
 the scheduler releases the lease and reassigns the first failed attempt without
-waiting for its timeout. A second failure blocks the task and opens lead review.
+waiting for its timeout. A second failure blocks the task and opens planner review.
 Lease expiry remains the fallback for a hung or disconnected worker whose
 process exit is not observable. Conflicting evidence remains immutable, opens a
 conflict task, and only its verdict marks affected outputs stale and queues

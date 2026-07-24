@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from src.agents.sandbox import worker_sandbox
-from src.orchestrator.lead import FixtureLeadExecutor, GeminiLeadExecutor, MistralLeadExecutor
+from src.orchestrator.planner import FixturePlannerExecutor, GeminiPlannerExecutor, MistralPlannerExecutor
 from src.state.run_store import RunStore
 from src.workers.executors import FixtureWorkerExecutor, GeminiWorkerExecutor, MistralWorkerExecutor
 
@@ -45,15 +45,15 @@ def main() -> None:
     try:
         if not args.sandbox_container:
             raise RuntimeError("Every executor requires --sandbox-container or WORKER_SANDBOX_CONTAINER.")
-        if task.type in {"plan_research", "lead_review"}:
+        if task.type in {"plan_research", "planner_review"}:
             if args.mode == "fixture":
-                executor = FixtureLeadExecutor(
+                executor = FixturePlannerExecutor(
                     sandbox=worker_sandbox(args.sandbox_container)
                 )
             elif args.mode == "gemini":
-                executor = GeminiLeadExecutor.from_container(args.sandbox_container)
+                executor = GeminiPlannerExecutor.from_container(args.sandbox_container)
             else:
-                executor = MistralLeadExecutor.from_container(args.sandbox_container)
+                executor = MistralPlannerExecutor.from_container(args.sandbox_container)
         elif args.mode == "fixture":
             executor = FixtureWorkerExecutor(
                 sandbox=worker_sandbox(args.sandbox_container)

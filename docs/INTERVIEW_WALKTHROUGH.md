@@ -25,7 +25,7 @@ Cost is explicit, not hidden in a shared chat: one worker subprocess and one
 or more model invocations. `stats.md`, `stats.png`, and `metrics.json` derive
 per-request input/output/total tokens and invocation latency from raw OTel
 spans in `traces/`. The current permissive guardrails are 64 worker turns and
-64,000 cumulative worker tokens; the lead has 16 turns and 16,000 tokens.
+64,000 cumulative worker tokens; the planner has 16 turns and 16,000 tokens.
 
 ## 2. What a worker receives—and deliberately does not
 
@@ -66,14 +66,14 @@ worker's stdout/stderr, lifecycle JSON, and Python traceback remain in
 
 - First observed process failure: release the lease and return the same task to
   `ready` for one ordinary retry.
-- Second observed process failure: mark it `blocked` and create a `lead_review`.
+- Second observed process failure: mark it `blocked` and create a `planner_review`.
 - If process observation is unavailable: the 300-second lease expiry is the
   fallback, with the same first-retry/second-review policy.
 
 The cost is one repeat task attempt. A semantic failure is handled differently:
 a `complete` proposal without a required artifact is immediately blocked,
 because blindly retrying the same malformed task envelope would not help. Its
-lead review carries the failed task's envelope and must issue exactly one
+planner review carries the failed task's envelope and must issue exactly one
 validated `TaskReform` that requeues that same task.
 
 ## 5. A late contradiction invalidates earlier work

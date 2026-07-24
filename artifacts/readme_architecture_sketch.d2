@@ -1,0 +1,41 @@
+direction: right
+
+request: {
+  label: "Request"
+  shape: hexagon
+}
+
+planner: {
+  label: "Planner\nplans work"
+  shape: rectangle
+  width: 130
+  height: 80
+}
+
+queue: {
+  label: "Task queue\nand dependencies"
+  shape: rectangle
+  width: 170
+  height: 80
+}
+
+workers: {
+  label: "Parallel\nworkers"
+  shape: rectangle
+  width: 130
+  height: 80
+}
+
+artifacts: {
+  label: "Artifacts\nand brief"
+  shape: document
+  width: 130
+  height: 80
+}
+
+request -> planner
+planner -> queue
+queue -> workers
+workers -> artifacts
+artifacts -> queue: downstream tasks / revisions {style.stroke-dash: 3}
+queue -> planner: blocked task reform {style.stroke-dash: 3}

@@ -22,17 +22,17 @@ Implemented steps:
 - A capability registry selects the narrowest worker profile and its skills,
   tools, and token/turn budget. The five application skills are task handoff,
   source discovery, evidence extraction, claim assessment, and brief writing.
-- The new team lead is a separate, short-lived Strands agent. It proposes a
+- The new team planner is a separate, short-lived Strands agent. It proposes a
   bounded DAG with local task keys; the scheduler validates and materializes it
-  with real IDs. The lead cannot directly mutate tasks or artifacts.
+  with real IDs. The planner cannot directly mutate tasks or artifacts.
 - When a dependent task becomes ready, the scheduler copies the immutable output
   artifact IDs of its completed dependencies into that task's allowlisted input
   envelope. This makes the DAG edge a concrete, auditable handoff instead of a
   timing-only dependency.
 
-This provides an interview trace from request -> lead plan -> ready task ->
+This provides an interview trace from request -> planner plan -> ready task ->
 claim -> proposal -> validated artifact -> downstream dependency readiness.
-The initial lead-plan path and dependency translation have deterministic tests.
+The initial planner-plan path and dependency translation have deterministic tests.
 
 ## Primary deep dive: durable shared state and context boundaries
 
@@ -58,7 +58,7 @@ Implemented steps:
 
 ### Planning and reasoning, including mid-run revision
 
-Implemented: the team lead returns structured `LeadPlan` data, not free-form
+Implemented: the team planner returns structured `PlannerPlan` data, not free-form
 delegation. The scheduler rejects duplicate keys, unknown dependencies, cycles,
 unsupported task types/capabilities, excessive fan-out, and unauthorized input
 artifacts before materializing a plan. `apply_conflict_verdict` retains prior
@@ -67,14 +67,14 @@ evidence, stales only named affected tasks, and queues revision work.
 ### Self-reflection and recovery from failure
 
 Implemented: claims are leases. The first expired lease or observed process
-failure returns work to `ready`; the second blocks it and opens a `lead_review`
+failure returns work to `ready`; the second blocks it and opens a `planner_review`
 task. A semantic contract failure—such as a `complete` response with no required
 artifact—goes directly to a bounded review because a blind retry would replay
 the malformed envelope. The review receives the failed task's envelope and
 allowlisted artifacts, and must submit exactly one validated task reform; the
 scheduler requeues that same task with the revised envelope. Review-gated work
 uses `awaiting_review` until approved. Workers can also submit a `blocked`
-proposal, which triggers the same lead-review path.
+proposal, which triggers the same planner-review path.
 
 Deterministic tests cover immediate process-failure reassignment, second-failure
 review, artifact-less completion review, and same-task reform/requeue. A full

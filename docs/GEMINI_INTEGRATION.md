@@ -1,13 +1,13 @@
 # Gemini Integration Reference
 
 Gemini is used through Strands' `GeminiModel`, not a separate direct-SDK
-prototype. Both workers and the team lead default to `gemini-3.5-flash-lite`;
+prototype. Both workers and the team planner default to `gemini-3.5-flash-lite`;
 set `GEMINI_MODEL` locally to override it. Authentication is read only from
 `GEMINI_API_KEY` in the environment or ignored `.env` file.
 
 Workers receive only their profile's explicit tools. Web-discovery workers use
 the sandboxed `ddg_web_search` and `web_fetch` tools; no generic search or
-filesystem tool is exposed. The team lead has no model-callable tools.
+filesystem tool is exposed. The team planner has no model-callable tools.
 
 Run the live board with:
 

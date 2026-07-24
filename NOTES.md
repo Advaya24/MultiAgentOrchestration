@@ -51,18 +51,19 @@ choices rather than trying to be separate broad areas of depth.
   to inspect than a black-box multi-agent run.
 ## Scope cuts and what I would build next
 
-- **Goal-level verification:** this is the first feature I would add. Today,
-  the run stops when every planned task is finished; it does not prove that the
-  final brief answers the original request. Add a final lead or reviewer task
-  that receives the original request, a compact task-status summary, and
-  read-only access to the final brief and supporting artifacts. It must either
-  accept the result, create narrowly scoped revision tasks, or mark the run
-  blocked. Limit review cycles so a run cannot loop forever. A coding-agent
-  hallucination caused this feature to be missed: it assumed that exhausting
-  the task graph verified the original goal. I discovered the omission during
-  code review and while taking these notes. The original intent was an
-  orchestrator-style lead agent that verified previous steps before accepting
-  the final result.
+- **Make the planner a true orchestrator:** this is the first feature I would
+  add. The original intent was an orchestrator-style agent that verified
+  previous steps before accepting the final result. Instead, the current agent
+  is a planner: it creates the initial task graph and only re-forms a blocked
+  task. Today, a run stops when every planned task is finished; it does not
+  prove that the final brief answers the original request. Add a final
+  orchestration step that receives the original request, a compact task-status
+  summary, and read-only access to the final brief and supporting artifacts. It
+  must either accept the result, create narrowly scoped revision tasks, or mark
+  the run blocked. Limit review cycles so a run cannot loop forever. A
+  coding-agent hallucination caused this feature to be missed: it assumed that
+  exhausting the task graph verified the original goal. I discovered the
+  omission during code review and while taking these notes.
 - **Dynamic skill discovery:** remove the fixed worker profiles and let an
   agent inspect a skill catalog, choose the skills that fit its assigned task,
   and record that choice in the task

@@ -3,14 +3,14 @@
 from __future__ import annotations
 
 from src.agents.factory import DEFAULT_MISTRAL_MODEL, DEFAULT_MODEL
-from src.orchestrator.lead import DEFAULT_MISTRAL_LEAD_MODEL, DEFAULT_LEAD_MODEL
+from src.orchestrator.planner import DEFAULT_MISTRAL_PLANNER_MODEL, DEFAULT_PLANNER_MODEL
 
 
-def test_lead_and_workers_share_flash_lite_default() -> None:
+def test_planner_and_workers_share_flash_lite_default() -> None:
     assert DEFAULT_MODEL == "gemini-3.5-flash-lite"
-    assert DEFAULT_LEAD_MODEL == DEFAULT_MODEL
+    assert DEFAULT_PLANNER_MODEL == DEFAULT_MODEL
 
 
-def test_lead_and_workers_share_mistral_default() -> None:
+def test_planner_and_workers_share_mistral_default() -> None:
     assert DEFAULT_MISTRAL_MODEL == "mistral-small-2506"
-    assert DEFAULT_MISTRAL_LEAD_MODEL == DEFAULT_MISTRAL_MODEL
+    assert DEFAULT_MISTRAL_PLANNER_MODEL == DEFAULT_MISTRAL_MODEL

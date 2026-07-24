@@ -5,9 +5,11 @@ request: {
   shape: hexagon
 }
 
-lead: {
-  label: "Team lead"
+planner: {
+  label: "Team planner\nplan proposal"
   shape: rectangle
+  width: 140
+  height: 100
 }
 
 plan_task: {
@@ -66,12 +68,12 @@ failure: {
 }
 
 blocked: {
-  label: "lead_review\nsecond failure blocks task"
+  label: "planner_review\nsecond failure blocks task"
   shape: document
 }
 
-request -> lead
-lead -> plan_task
+request -> planner
+planner -> plan_task
 plan_task -> discover
 discover -> candidate_sources
 candidate_sources -> extract
@@ -85,4 +87,4 @@ write_brief -> brief
 discover -> failure: worker dies {style.stroke-dash: 3}
 failure -> discover: one reassignment {style.stroke-dash: 3}
 failure -> blocked: second failure {style.stroke-dash: 3}
-blocked -> lead
+blocked -> planner

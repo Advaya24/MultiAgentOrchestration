@@ -11,7 +11,7 @@ Editable source: [task_board_swarm_architecture.d2](../artifacts/task_board_swar
 
 ## Execution model
 
-The team lead proposes run-level plans; it cannot mutate durable state. The
+The team planner proposes run-level plans; it cannot mutate durable state. The
 local scheduler is the only writer of task-state transitions: it validates and
 materializes the plan, controls priority and parallelism, grants leases, accepts
 proposals, and records recovery after failures or lease expiry.
@@ -61,11 +61,11 @@ Normal lifecycle is `pending`, `ready`, `claimed`, `awaiting_review`, then
 Workers propose bounded outputs. Mechanical validation checks schemas, artifact
 IDs, dependencies, and allowed transitions. Tasks explicitly marked
 `review_required` pause in `awaiting_review`; the scheduler approves them. The
-team lead plans or re-forms work but never accepts it directly.
+team planner plans or re-forms work but never accepts it directly.
 
 If a lease expires or the runner observes a nonzero worker exit, the scheduler
 reassigns the task once. A second operational failure marks it blocked and
-creates lead-review work. A semantic completion failure goes directly to review;
+creates planner-review work. A semantic completion failure goes directly to review;
 the review must re-form and requeue that same task. New contradictory evidence
 is stored without overwriting prior evidence. A completed conflict verdict names
 the affected work; only those tasks become stale and receive focused revisions.

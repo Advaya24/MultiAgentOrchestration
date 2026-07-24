@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-from src.orchestrator.lead import LEAD_CAPABILITIES, LEAD_TASK_TYPES
-from src.state.models import CompletionProposal, LeadPlan, Lease, PlannedTaskDraft, TaskDraft, TaskRecord, TaskReform, TaskStatus
+from src.orchestrator.planner import PLANNER_CAPABILITIES, PLANNER_TASK_TYPES
+from src.state.models import CompletionProposal, PlannerPlan, Lease, PlannedTaskDraft, TaskDraft, TaskRecord, TaskReform, TaskStatus
 from src.state.run_store import RunStore
 
 
@@ -74,13 +74,13 @@ class Scheduler:
             task.lease = None
             self.store.update_task(task)
             self.store.append_event("task_blocked", task_id=task.id, summary=proposal.summary)
-            self._create_lead_review(task)
+            self._create_planner_review(task)
             self.store.render_board()
             return
         if proposal.status != "complete":
             raise ValueError(f"Unsupported completion status: {proposal.status}")
 
-        if task.type not in {"plan_research", "lead_review"} and not proposal.artifacts:
+        if task.type not in {"plan_research", "planner_review"} and not proposal.artifacts:
             task.lease = None
             task.status = TaskStatus.BLOCKED
             self.store.update_task(task)
@@ -89,27 +89,27 @@ class Scheduler:
                 task_id=task.id,
                 reason="completion_missing_artifact",
             )
-            self._create_lead_review(task)
+            self._create_planner_review(task)
             self.store.render_board()
             return
 
-        if proposal.lead_plan is not None:
-            if task.type not in {"plan_research", "lead_review"}:
-                raise ValueError("Only team-lead tasks may submit a lead plan")
-            self._validate_lead_plan(task, proposal.lead_plan)
+        if proposal.planner_plan is not None:
+            if task.type not in {"plan_research", "planner_review"}:
+                raise ValueError("Only team-planner tasks may submit a planner plan")
+            self._validate_planner_plan(task, proposal.planner_plan)
 
         artifact_ids = [self.store.write_artifact(task.id, draft) for draft in proposal.artifacts]
         task.output_artifacts.extend(artifact_ids)
         task.lease = None
         task.status = TaskStatus.AWAITING_REVIEW if task.review_required else TaskStatus.COMPLETE
         self.store.update_task(task)
-        if proposal.lead_plan is not None:
-            materialized = self._materialize_lead_plan(task, proposal.lead_plan)
+        if proposal.planner_plan is not None:
+            materialized = self._materialize_planner_plan(task, proposal.planner_plan)
             self.store.append_event(
-                "lead_plan_materialized",
+                "planner_plan_materialized",
                 task_id=task.id,
                 created_task_ids=materialized,
-                summary=proposal.lead_plan.summary,
+                summary=proposal.planner_plan.summary,
             )
         for draft in proposal.follow_up_tasks:
             self._create_follow_up(draft)
@@ -147,7 +147,7 @@ class Scheduler:
             else:
                 task.status = TaskStatus.BLOCKED
                 self.store.append_event("lease_blocked", task_id=task.id)
-                self._create_lead_review(task)
+                self._create_planner_review(task)
             self.store.update_task(task)
         if expired:
             self.store.render_board()
@@ -170,7 +170,7 @@ class Scheduler:
             task.status = TaskStatus.BLOCKED
             self.store.update_task(task)
             self.store.append_event("worker_failure_blocked", task_id=task.id, return_code=return_code)
-            self._create_lead_review(task)
+            self._create_planner_review(task)
         self.refresh_ready_tasks()
         self.store.render_board()
 
@@ -213,11 +213,11 @@ class Scheduler:
             )
         )
 
-    def _create_lead_review(self, task: TaskRecord) -> None:
+    def _create_planner_review(self, task: TaskRecord) -> None:
         self.store.create_task(
             TaskRecord(
                 id=self.store.next_task_id(),
-                type="lead_review",
+                type="planner_review",
                 instruction=(
                     f"Re-form and requeue blocked task {task.id}. Original type: {task.type}. "
                     f"Original instruction: {task.instruction}. "
@@ -230,44 +230,44 @@ class Scheduler:
         )
         self.refresh_ready_tasks()
 
-    def _validate_lead_plan(self, lead_task: TaskRecord, plan: LeadPlan) -> None:
+    def _validate_planner_plan(self, planner_task: TaskRecord, plan: PlannerPlan) -> None:
         if len(plan.tasks) > 8:
-            raise ValueError("Lead plan exceeds the eight-task fan-out limit")
+            raise ValueError("Planner plan exceeds the eight-task fan-out limit")
         keys = [draft.key for draft in plan.tasks]
         if not all(key and key.replace("-", "").replace("_", "").isalnum() for key in keys):
-            raise ValueError("Lead task keys must be non-empty alphanumeric slugs")
+            raise ValueError("Planner task keys must be non-empty alphanumeric slugs")
         if len(keys) != len(set(keys)):
-            raise ValueError("Lead plan contains duplicate task keys")
-        if lead_task.type == "lead_review":
+            raise ValueError("Planner plan contains duplicate task keys")
+        if planner_task.type == "planner_review":
             if plan.tasks:
-                raise ValueError("Lead reviews must re-form the blocked task instead of creating detached tasks")
+                raise ValueError("Planner reviews must re-form the blocked task instead of creating detached tasks")
             if len(plan.reforms) != 1:
-                raise ValueError("Lead review must contain exactly one task reform")
-            self._validate_task_reform(lead_task, plan.reforms[0])
+                raise ValueError("Planner review must contain exactly one task reform")
+            self._validate_task_reform(planner_task, plan.reforms[0])
         elif plan.reforms:
-            raise ValueError("Only lead reviews may submit task reforms")
+            raise ValueError("Only planner reviews may submit task reforms")
         key_set = set(keys)
         for draft in plan.tasks:
-            if draft.type not in LEAD_TASK_TYPES:
-                raise ValueError(f"Unsupported lead task type: {draft.type}")
-            if not set(draft.required_capabilities).issubset(LEAD_CAPABILITIES):
-                raise ValueError(f"Unsupported capabilities for lead task {draft.key}")
+            if draft.type not in PLANNER_TASK_TYPES:
+                raise ValueError(f"Unsupported planner task type: {draft.type}")
+            if not set(draft.required_capabilities).issubset(PLANNER_CAPABILITIES):
+                raise ValueError(f"Unsupported capabilities for planner task {draft.key}")
             if not set(draft.depends_on_keys).issubset(key_set):
-                raise ValueError(f"Unknown dependency in lead task {draft.key}")
+                raise ValueError(f"Unknown dependency in planner task {draft.key}")
             if draft.key in draft.depends_on_keys:
-                raise ValueError(f"Lead task {draft.key} cannot depend on itself")
-            if not set(draft.input_artifacts).issubset(lead_task.input_artifacts):
-                raise ValueError(f"Lead task {draft.key} references an unpermitted artifact")
+                raise ValueError(f"Planner task {draft.key} cannot depend on itself")
+            if not set(draft.input_artifacts).issubset(planner_task.input_artifacts):
+                raise ValueError(f"Planner task {draft.key} references an unpermitted artifact")
         self._assert_acyclic(plan.tasks)
 
-    def _validate_task_reform(self, lead_task: TaskRecord, reform: TaskReform) -> None:
-        if reform.target_task_id != lead_task.review_of_task_id:
-            raise ValueError("Lead review may reform only its blocked task")
+    def _validate_task_reform(self, planner_task: TaskRecord, reform: TaskReform) -> None:
+        if reform.target_task_id != planner_task.review_of_task_id:
+            raise ValueError("Planner review may reform only its blocked task")
         if not reform.instruction.strip():
             raise ValueError("Reformed task instruction cannot be empty")
-        if not set(reform.required_capabilities).issubset(LEAD_CAPABILITIES):
+        if not set(reform.required_capabilities).issubset(PLANNER_CAPABILITIES):
             raise ValueError("Reformed task has unsupported capabilities")
-        if not set(reform.input_artifacts).issubset(lead_task.input_artifacts):
+        if not set(reform.input_artifacts).issubset(planner_task.input_artifacts):
             raise ValueError("Reformed task references an unpermitted artifact")
 
     @staticmethod
@@ -278,7 +278,7 @@ class Scheduler:
 
         def visit(key: str) -> None:
             if key in visiting:
-                raise ValueError("Lead plan contains a dependency cycle")
+                raise ValueError("Planner plan contains a dependency cycle")
             if key in visited:
                 return
             visiting.add(key)
@@ -290,7 +290,7 @@ class Scheduler:
         for key in dependencies:
             visit(key)
 
-    def _materialize_lead_plan(self, lead_task: TaskRecord, plan: LeadPlan) -> list[str]:
+    def _materialize_planner_plan(self, planner_task: TaskRecord, plan: PlannerPlan) -> list[str]:
         for reform in plan.reforms:
             original = self.store.read_task(reform.target_task_id)
             original.instruction = reform.instruction
@@ -300,7 +300,7 @@ class Scheduler:
             original.status = TaskStatus.PENDING
             original.lease = None
             self.store.update_task(original)
-            self.store.append_event("task_reformed", task_id=original.id, review_task_id=lead_task.id)
+            self.store.append_event("task_reformed", task_id=original.id, review_task_id=planner_task.id)
         next_number = len(self.store.list_tasks()) + 1
         task_ids = {draft.key: f"T-{next_number + index:03d}" for index, draft in enumerate(plan.tasks)}
         materialized: list[str] = []
