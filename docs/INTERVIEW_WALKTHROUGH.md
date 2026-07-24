@@ -99,6 +99,18 @@ edges. Next would be automated impact analysis over those edges, per-run token
 budgets/quotas, and a bounded revision-only Swarm only where shared scratch
 context demonstrably improves a review task.
 
+## Next steps
+
+1. Add citation-grade briefs. Discovery would save source metadata and
+   supporting excerpts; assessment would link claims to citation IDs; the final
+   brief would render inline citations and a bibliography. This gives every
+   material claim a chain back to its source URL or DOI, rather than only to an
+   internal artifact ID.
+2. Use those provenance links to identify affected claims automatically when a
+   conflict verdict arrives.
+3. Add per-run token and cost budgets after the permissive live-run limits have
+   served their debugging purpose.
+
 ## Evidence to open during the interview
 
 - `board.md` and `task_graph.svg`: current DAG and state.

@@ -94,14 +94,16 @@ it. The host-local runner has no Docker-socket capability.
 Current gap: a prepared Docker container and Gemini credential are still needed
 for a live end-to-end validation; deterministic tests do not call either.
 
-## What remains deliberately deferred
+## Next steps
 
-- A bounded Strands Swarm for a single revision/review task, if a later version
-  benefits from shared scratch context.
-- Automated conflict detection and independent-review policy; the scheduler
-  currently supplies the focused invalidation mechanism once a verdict exists.
-- Production scheduling concerns such as distributed locking, queue backends,
-  quotas, and crash-safe subprocess supervision.
+1. Add citation-grade briefs: persist source metadata and supporting excerpts,
+   link claims to citation IDs, and render inline citations plus a bibliography.
+   This replaces internal-only references such as `A-004` with a traceable
+   `brief claim -> evidence artifact -> source URL/DOI` chain.
+2. Evaluate a bounded Strands Swarm for one revision/review task if shared
+   scratch context proves valuable.
+3. Add provenance-driven invalidation, independent-review policy, and
+   production scheduling concerns such as durable queues and quotas.
 
 The supporting features exist to make the two primary deep dives convincing,
 not to claim a production-complete orchestration platform.
