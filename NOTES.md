@@ -74,6 +74,3 @@ choices rather than trying to be separate broad areas of depth.
   expose only an internal artifact ID.
 - **Provenance-driven invalidation:** use those claim-to-source links to find
   the exact claims and brief sections affected by a later conflict verdict.
-- **Operational scale:** retain the task/artifact contracts but replace the
-  single-host Markdown/polling runner with transactional claims in a durable
-  queue and database. Add per-run token/cost budgets at the same time.
