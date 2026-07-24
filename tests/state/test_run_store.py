@@ -63,6 +63,19 @@ def test_render_dashboard_summarizes_otel_requests_and_renders_brief(tmp_path) -
     "gen_ai.server.time_to_first_token": 400
   }
 }
+{
+  "name": "invoke_agent Strands Agents",
+  "start_time": "2026-07-24T04:22:10Z",
+  "end_time": "2026-07-24T04:22:12Z",
+  "attributes": {
+    "task.id": "T-001",
+    "profile": "writer",
+    "gen_ai.request.model": "test-model",
+    "gen_ai.usage.input_tokens": 10,
+    "gen_ai.usage.output_tokens": 5,
+    "gen_ai.usage.total_tokens": 15
+  }
+}
 ''',
         encoding="utf-8",
     )
@@ -74,6 +87,7 @@ def test_render_dashboard_summarizes_otel_requests_and_renders_brief(tmp_path) -
     store.render_dashboard()
 
     metrics = (store.run_dir / "metrics.json").read_text(encoding="utf-8")
+    assert '"request_count": 1' in metrics
     assert '"total_tokens": 15' in metrics
     assert '"latency_ms": 2000.0' in metrics
     assert "| T-001 | writer | test-model | 10 | 5 | 15 | 2000.0 |" in (store.run_dir / "stats.md").read_text()

@@ -278,6 +278,11 @@ class RunStore:
         requests: list[dict[str, Any]] = []
         for path in sorted(self.traces_dir.glob("*.otel.json")):
             for span in self._read_json_stream(path):
+                # Strands emits an aggregate ``invoke_agent`` span whose token
+                # attributes sum its child chat spans. Count only provider chat
+                # invocations so run totals do not double-count that aggregate.
+                if span.get("name") != "chat":
+                    continue
                 attributes = span.get("attributes", {})
                 if not isinstance(attributes, dict) or "gen_ai.usage.total_tokens" not in attributes:
                     continue
@@ -373,32 +378,87 @@ class RunStore:
         return "\n".join(lines) + "\n"
 
     @staticmethod
-    @staticmethod
     def _render_stats_chart(metrics: dict[str, Any], target: Path) -> None:
-        """Render request-level tokens and latency using matplotlib's Agg backend."""
+        """Render task summaries plus color-grouped request-level metrics."""
         requests = metrics["requests"]
-        labels = [f"{item['task_id']} · {item['profile']}" for item in requests] or ["No requests yet"]
-        input_tokens = [item["input_tokens"] for item in requests] or [0]
-        output_tokens = [item["output_tokens"] for item in requests] or [0]
-        latency = [item["latency_ms"] or 0 for item in requests] or [0]
-        figure, (token_axis, latency_axis) = plt.subplots(1, 2, figsize=(13, max(3.5, len(labels) * 0.65 + 1)))
+        task_order: list[str] = []
+        task_totals: dict[str, dict[str, float]] = {}
+        for item in requests:
+            task_id = str(item["task_id"])
+            if task_id not in task_totals:
+                task_order.append(task_id)
+                task_totals[task_id] = {"input": 0, "output": 0, "latency": 0}
+            task_totals[task_id]["input"] += item["input_tokens"]
+            task_totals[task_id]["output"] += item["output_tokens"]
+            task_totals[task_id]["latency"] += item["latency_ms"] or 0
+        if not task_order:
+            task_order = ["No requests yet"]
+            task_totals = {"No requests yet": {"input": 0, "output": 0, "latency": 0}}
+
+        palette = ["#4f46e5", "#059669", "#d97706", "#db2777", "#0284c7", "#7c3aed", "#65a30d", "#dc2626"]
+        task_colors = {task_id: palette[index % len(palette)] for index, task_id in enumerate(task_order)}
+        call_labels: list[str] = []
+        call_tokens: list[int] = []
+        call_latency: list[float] = []
+        call_colors: list[str] = []
+        call_groups: list[tuple[str, int, int]] = []
+        start = 0
+        current_task: str | None = None
+        task_call_number = 0
+        for index, item in enumerate(requests):
+            task_id = str(item["task_id"])
+            if task_id != current_task:
+                if current_task is not None:
+                    call_groups.append((current_task, start, index - 1))
+                current_task = task_id
+                start = index
+                task_call_number = 0
+            task_call_number += 1
+            call_labels.append(f"{task_id}\n#{task_call_number}")
+            call_tokens.append(item["total_tokens"])
+            call_latency.append(item["latency_ms"] or 0)
+            call_colors.append(task_colors[task_id])
+        if current_task is not None:
+            call_groups.append((current_task, start, len(requests) - 1))
+        if not call_labels:
+            call_labels, call_tokens, call_latency, call_colors = ["—"], [0], [0], ["#94a3b8"]
+
+        figure, axes = plt.subplots(2, 2, figsize=(15, max(7, len(call_labels) * 0.42 + 4)))
         figure.patch.set_facecolor("#f8fafc")
-        positions = list(range(len(labels)))
-        token_axis.barh(positions, input_tokens, color="#4f46e5", label="Input")
-        token_axis.barh(positions, output_tokens, left=input_tokens, color="#a5b4fc", label="Output")
-        token_axis.set_title("Tokens by model request", loc="left", fontweight="bold")
+        task_positions = list(range(len(task_order)))
+        token_axis, task_latency_axis, call_token_axis, call_latency_axis = axes.ravel()
+        task_input = [task_totals[task_id]["input"] for task_id in task_order]
+        task_output = [task_totals[task_id]["output"] for task_id in task_order]
+        task_latency = [task_totals[task_id]["latency"] for task_id in task_order]
+        token_axis.barh(task_positions, task_input, color="#4f46e5", label="Input")
+        token_axis.barh(task_positions, task_output, left=task_input, color="#a5b4fc", label="Output")
+        token_axis.set_title("Tokens by task", loc="left", fontweight="bold")
         token_axis.set_xlabel("Tokens")
-        token_axis.set_yticks(positions, labels)
+        token_axis.set_yticks(task_positions, task_order)
         token_axis.legend(frameon=False, ncols=2)
-        latency_axis.barh(positions, latency, color="#059669")
-        latency_axis.set_title("Invocation latency", loc="left", fontweight="bold")
-        latency_axis.set_xlabel("Milliseconds")
-        latency_axis.set_yticks(positions, labels)
-        for axis in (token_axis, latency_axis):
+        task_latency_axis.barh(task_positions, task_latency, color=[task_colors[task_id] for task_id in task_order])
+        task_latency_axis.set_title("Total invocation latency by task", loc="left", fontweight="bold")
+        task_latency_axis.set_xlabel("Milliseconds")
+        task_latency_axis.set_yticks(task_positions, task_order)
+
+        call_positions = list(range(len(call_labels)))
+        call_token_axis.bar(call_positions, call_tokens, color=call_colors)
+        call_token_axis.set_title("Tokens by model call", loc="left", fontweight="bold")
+        call_token_axis.set_ylabel("Tokens")
+        call_latency_axis.bar(call_positions, call_latency, color=call_colors)
+        call_latency_axis.set_title("Latency by model call", loc="left", fontweight="bold")
+        call_latency_axis.set_ylabel("Milliseconds")
+        for axis in (call_token_axis, call_latency_axis):
+            axis.set_xticks(call_positions, call_labels, fontsize=8)
+            for task_id, group_start, group_end in call_groups:
+                axis.axvspan(group_start - 0.5, group_end + 0.5, color=task_colors[task_id], alpha=0.08)
+                axis.axvline(group_end + 0.5, color="#cbd5e1", linewidth=0.7)
+        for axis in axes.ravel():
             axis.set_facecolor("#ffffff")
             axis.grid(axis="x", color="#e2e8f0")
             axis.set_axisbelow(True)
-            axis.invert_yaxis()
+        token_axis.invert_yaxis()
+        task_latency_axis.invert_yaxis()
         figure.suptitle(
             f"Run dashboard — {metrics['request_count']} requests, {metrics['total_tokens']:,} total tokens",
             x=0.08,

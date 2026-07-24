@@ -7,17 +7,23 @@ of Markdown task state, leases work, validates transitions, and creates
 recovery or revision work. Strands provides the reasoning and tool loop inside
 short-lived workers; conversation history is never workflow state.
 
-Version 1 does not use the built-in Strands `Swarm`: its shared handoff context
-would grow with the run. A later revision worker may use a tightly bounded
-swarm for one conflict or brief-review task. A Strands `Graph` is likewise
-reserved for fixed sub-workflows.
+Version 1 does not use the built-in Strands `Swarm`. Its shared handoff context
+could grow with the run, and the context-management behavior was not inspected
+deeply enough within the time box to make it a trustworthy durable-control-plane
+choice. A later revision worker may evaluate a tightly bounded Swarm for one
+conflict or brief-review task. A Strands `Graph` is likewise reserved for fixed
+sub-workflows.
 
 ## Runtime boundary and sandboxing
 
 The runner is one host-local scheduler process. It owns the durable run
-directory and deliberately does not receive Docker-socket privileges. Each
-claimed task starts one short-lived worker subprocess, which creates one fresh
-Strands agent and exits after submitting its result.
+directory and deliberately does not receive Docker-socket privileges. It is an
+ad hoc control loop for this version: each tick starts every `ready` task that
+fits the configured parallelism budget, without asking an LLM to decide whether
+to spawn. Each claimed task starts one short-lived worker subprocess, which
+creates one fresh Strands agent and exits after submitting its result. A future
+Strands Harness integration can replace this runner while preserving the task
+and artifact contracts.
 
 Every worker executor receives a Strands `DockerSandbox`. The sandbox container
 runs as a non-root `worker` user with a task workspace. A local
@@ -172,9 +178,9 @@ show task ID, type, status, and attempt, with dependency edges; none is an
 authority for orchestration state.
 
 Every board refresh also derives `metrics.json`, `stats.md`, and a matplotlib
-`stats.png` from the native local OTel model-invocation spans. The PNG provides
-an embedded bar visualization of tokens and latency per request; the Markdown and JSON
-provide the values. Together they include per-request and aggregate input,
+`stats.png` from the native local OTel model-invocation spans. The PNG groups
+requests by task, showing task-level totals alongside color-grouped individual
+calls; the Markdown and JSON provide the values. Together they include per-request and aggregate input,
 output, and total tokens; end-to-end invocation latency; and model-provided
 time-to-first-token when available. The raw spans remain the authority. A
 derived `report.md` exposes the latest `research_brief` payload as normal
@@ -187,3 +193,9 @@ Lease expiry remains the fallback for a hung or disconnected worker whose
 process exit is not observable. Conflicting evidence remains immutable, opens a
 conflict task, and only its verdict marks affected outputs stale and queues
 focused revisions.
+
+Within this single scheduler process, `claimed` also prevents duplicate local
+launches: a task leaves `ready` before the runner can select another copy of it.
+This reduces local race conditions but is not a distributed locking mechanism;
+multiple scheduler processes would require transactional claims in a database
+or queue.

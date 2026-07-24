@@ -41,9 +41,19 @@ choices rather than trying to be separate broad areas of depth.
 - Dependency completion creates the handoff: the scheduler copies completed
   upstream artifact IDs into the downstream worker's allowlist before it can
   run.
+- The host-local runner is an intentionally pragmatic control loop. It starts
+  every task that is ready now and fits the parallelism budget, so spawning does
+  not depend on an LLM deciding whether to delegate. I would replace or fold it
+  into a proper harness after more time evaluating the Strands Harness SDK.
+- `claimed` is a useful local concurrency boundary: the single scheduler moves
+  a task from `ready` to `claimed` before the runner spawns its subprocess, so
+  this runner cannot launch the same ready task twice. It reduces local races;
+  it is not a distributed lock for multiple independent schedulers.
 - Fresh, capability-selected workers are preferable here to a long-lived shared
-  Swarm. The built-in Swarm is deferred to a narrowly scoped revision task if
-  shared scratch context proves valuable.
+  Swarm. I deferred the built-in orchestration features because I did not have
+  time in the three-hour limit to inspect their context-management behavior
+  deeply enough; shared context can otherwise become rigid or unintuitive. A
+  narrowly scoped revision task is the first place I would evaluate a Swarm.
 - Docker sandboxing is applied to workers and their explicit tools, while the
   host runner stays outside the sandbox and has no Docker-socket authority.
 - Standard OpenTelemetry plus raw local spans, worker logs, a task graph, and a
