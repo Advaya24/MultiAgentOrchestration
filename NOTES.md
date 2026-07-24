@@ -17,8 +17,10 @@ Durable shared state is the companion choice. In long-horizon work, the
 orchestrator's context will eventually compact, so it cannot be the reliable
 history of the system. Here that history is stored as Markdown task and artifact
 records; in other work I have used an LLM wiki for the same purpose. The
-artifact trace lets a later agent retrieve and attach an older relevant artifact
-to a new task without loading the full run history into every worker context.
+artifact trace lets the scheduler attach an older relevant artifact to a later
+or revision task; that worker can then retrieve the named record without
+loading the full run history into its context. Workers cannot arbitrarily search
+the artifact history.
 
 - **Durable handoffs:** tasks and artifacts survive worker exits, retries, and
   later revision. This is the layer that keeps a multi-step run coherent rather
