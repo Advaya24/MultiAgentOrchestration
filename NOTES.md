@@ -13,6 +13,13 @@ some work should be parallelized and later reconciled.
 I therefore focused on durable orchestration/handoffs and bounded worker
 context.
 
+Durable shared state is the companion choice. In long-horizon work, the
+orchestrator's context will eventually compact, so it cannot be the reliable
+history of the system. Here that history is stored as Markdown task and artifact
+records; in other work I have used an LLM wiki for the same purpose. The
+artifact trace lets a later agent retrieve and attach an older relevant artifact
+to a new task without loading the full run history into every worker context.
+
 - **Durable handoffs:** tasks and artifacts survive worker exits, retries, and
   later revision. This is the layer that keeps a multi-step run coherent rather
   than treating it as one long agent conversation.
