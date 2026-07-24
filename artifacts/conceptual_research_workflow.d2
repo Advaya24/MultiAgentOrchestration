@@ -1,0 +1,43 @@
+direction: down
+
+question: {
+  label: "Research question"
+  shape: hexagon
+}
+
+search_angles: {
+  label: "Several search angles\nand many candidate sources"
+  shape: rectangle
+}
+
+sources: {
+  label: "Retrieved source material\narticles, reports, papers, PDFs"
+  shape: stored_data
+}
+
+evidence: {
+  label: "Extracted evidence\nclaims, excerpts, dates, definitions"
+  shape: stored_data
+}
+
+cross_check: {
+  label: "Corroboration and conflict\nacross sources"
+  shape: rectangle
+}
+
+brief: {
+  label: "Short cited brief\nanswer, uncertainty, limitations"
+  shape: document
+}
+
+question -> search_angles
+search_angles -> sources
+sources -> evidence
+evidence -> cross_check
+cross_check -> brief
+
+late_source: {
+  label: "Late or contradictory source"
+  shape: document
+}
+late_source -> sources: changes available evidence {style.stroke-dash: 3}
