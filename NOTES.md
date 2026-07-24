@@ -34,34 +34,27 @@ choices rather than trying to be separate broad areas of depth.
 
 ## Decisions I am most confident about
 
-- The scheduler is the only durable-state writer. The lead can propose a plan;
-  workers can propose results; neither can directly mutate task state.
-- Markdown tasks and immutable artifacts are the local source of truth. The
-  board, graph, dashboard, and rendered report are derived views.
-- Dependency completion creates the handoff: the scheduler copies completed
-  upstream artifact IDs into the downstream worker's allowlist before it can
-  run.
-- The host-local runner is an intentionally pragmatic control loop. It starts
-  every task that is ready now and fits the parallelism budget, so spawning does
-  not depend on an LLM deciding whether to delegate. I would replace or fold it
-  into a proper harness after more time evaluating the Strands Harness SDK.
-- `claimed` is a useful local concurrency boundary: the single scheduler moves
-  a task from `ready` to `claimed` before the runner spawns its subprocess, so
-  this runner cannot launch the same ready task twice. It reduces local races;
-  it is not a distributed lock for multiple independent schedulers.
-- Fresh, capability-selected workers are preferable here to a long-lived shared
-  Swarm. I deferred the built-in orchestration features because I did not have
-  time in the three-hour limit to inspect their context-management behavior
-  deeply enough; shared context can otherwise become rigid or unintuitive. A
-  narrowly scoped revision task is the first place I would evaluate a Swarm.
-- Worker profiles are selected manually from a small, approved list in this
-  version. That made early runs easy to test and inspect, but it also makes the
-  system rigid: every new kind of work needs a profile change in code.
-- Docker sandboxing is applied to workers and their explicit tools, while the
-  host runner stays outside the sandbox and has no Docker-socket authority.
-- Standard OpenTelemetry plus raw local spans, worker logs, a task graph, and a
-  small stats dashboard make a run inspectable without inventing a custom
-  tracing protocol.
+- **A task queue with parallel workers and an explicit dependency graph:** the
+  scheduler starts every ready task that fits the parallelism budget, while the
+  graph makes sequencing and handoffs visible. This is similar to the task-list
+  and parallel-execution patterns I find useful in Claude Code and Superpowers:
+  independent work can proceed at once, while dependent work waits for the
+  right inputs.
+- **Durable artifacts instead of a shared conversation:** workers receive only
+  their task contract and named upstream artifacts. The scheduler, rather than
+  an agent's temporary context, keeps the durable history. This makes retries
+  and later revisions easier to reason about, and avoids unrelated context
+  silently becoming evidence.
+- **Full observability despite the short time limit:** task events, worker
+  logs, traces, a graph, and a small dashboard made live failures much easier
+  to debug. This was relatively inexpensive to add and made the system easier
+  to inspect than a black-box multi-agent run.
+- **An orchestrator-style pattern with tighter context management:** the lead
+  plans dependency-aware work and the scheduler controls execution and durable
+  state. I think this should work well for medium-horizon, decomposable tasks.
+  I am less confident about 100-plus-step workflows until the lead can inspect
+  compact run summaries and perform the final goal-level verification described
+  below.
 
 ## Scope cuts and what I would build next
 
