@@ -49,13 +49,6 @@ choices rather than trying to be separate broad areas of depth.
   logs, traces, a graph, and a small dashboard made live failures much easier
   to debug. This was relatively inexpensive to add and made the system easier
   to inspect than a black-box multi-agent run.
-- **An orchestrator-style pattern with tighter context management:** the lead
-  plans dependency-aware work and the scheduler controls execution and durable
-  state. I think this should work well for medium-horizon, decomposable tasks.
-  I am less confident about 100-plus-step workflows until the lead can inspect
-  compact run summaries and perform the final goal-level verification described
-  below.
-
 ## Scope cuts and what I would build next
 
 - **Goal-level verification:** this is the first feature I would add. Today,
