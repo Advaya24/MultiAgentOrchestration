@@ -94,6 +94,7 @@ used by the task-board system. It has one read-only arXiv MCP tool, launched by
 - [Architecture options and tradeoffs](docs/ARCHITECTURE_TRADEOFFS.md)
 - [Strands implementation contract](docs/STRANDS_IMPLEMENTATION.md)
 - [Selected engineering focus](docs/IMPLEMENTATION_FOCUS.md)
+- [Interview walkthrough](docs/INTERVIEW_WALKTHROUGH.md)
 - [Strands Harness SDK reference](docs/STRANDS_HARNESS.md)
 - [Gemini integration reference](docs/GEMINI_INTEGRATION.md)
 - [Design notes](NOTES.md)

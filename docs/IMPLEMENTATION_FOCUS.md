@@ -76,14 +76,10 @@ scheduler requeues that same task with the revised envelope. Review-gated work
 uses `awaiting_review` until approved. Workers can also submit a `blocked`
 proposal, which triggers the same lead-review path.
 
-Current gap: the recovery and stale-revision code paths need their own
-deterministic tests and a full subprocess-level fixture run.
-
-Planned recovery rule: recovery should remain bounded independently of the
-generous model and time budgets. A failed task should receive its normal retry,
-then at most one `lead_review`; a valid review should revise and requeue that
-same blocked task rather than fan out into detached work. This convergence
-change remains pending.
+Deterministic tests cover immediate process-failure reassignment, second-failure
+review, artifact-less completion review, and same-task reform/requeue. A full
+subprocess-level fixture walkthrough remains useful presentation evidence but
+is not a missing scheduler behavior.
 
 ### Tool and execution design, including sandboxed runtimes
 

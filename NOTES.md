@@ -9,14 +9,14 @@ task, referenced artifacts, approved tools, and context budget.
 
 ## Decisions
 
-- The team lead controls admission, priority, and completion; compatible
-  workers pull approved ready work through a scheduler-managed lease.
+- The team lead proposes bounded plans and task reforms; the scheduler controls
+  admission, priority, claims, completion, and every durable state transition.
 - Task files are authoritative local state. The scheduler is the sole writer
   for status transitions; `board.md` is a derived view.
 - Capability requirements select worker profiles from a registry rather than
   hard-coding a persona per task.
-- Evidence, conflict decisions, and final briefs use independent review tasks;
-  routine work uses mechanical checks plus lead acceptance.
+- Tasks use mechanical scheduler validation by default; explicitly
+  review-required tasks pause for approval. The lead never accepts work.
 - Contradictions create conflict-resolution and targeted revision tasks rather
   than rewriting or globally rerunning the workflow.
 

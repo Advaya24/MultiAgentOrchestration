@@ -11,11 +11,10 @@ Editable source: [task_board_swarm_architecture.d2](../artifacts/task_board_swar
 
 ## Execution model
 
-The team lead owns run-level decisions: it decomposes the request, controls
-priority and parallelism, accepts validated work, and opens follow-up tasks.
-The local scheduler is the only writer of task-state transitions. It grants a
-lease when a compatible worker claims ready work and records recovery after a
-lease expires.
+The team lead proposes run-level plans; it cannot mutate durable state. The
+local scheduler is the only writer of task-state transitions: it validates and
+materializes the plan, controls priority and parallelism, grants leases, accepts
+proposals, and records recovery after failures or lease expiry.
 
 Workers are short-lived Strands agents selected from a capability registry.
 Each task type requires capabilities instead of a fixed named worker. The
@@ -37,9 +36,9 @@ human-readable view, not a concurrent edit target. A run uses this layout:
 ```text
 run/
   board.md
-  tasks/T-001-plan.md
-  tasks/T-002-discover-primary-sources.md
-  artifacts/E-001-source-extract.md
+  tasks/T-001.md
+  tasks/T-002.md
+  artifacts/A-001.md
   events.md
 ```
 
@@ -49,8 +48,9 @@ Each task has YAML front matter with `id`, `type`, `status`, `depends_on`,
 instruction and acceptance criteria.
 
 The scheduler is the only component allowed to update a task file's status.
-Workers submit claim and completion proposals, avoiding write conflicts while
-keeping every durable state record inspectable as Markdown.
+The runner claims work through the scheduler; workers submit only completion
+proposals, avoiding write conflicts while keeping every durable state record
+inspectable as Markdown.
 
 ## Lifecycle, validation, and recovery
 
@@ -58,16 +58,17 @@ Normal lifecycle is `pending`, `ready`, `claimed`, `awaiting_review`, then
 `complete`. Exceptional states are `blocked`, `failed`, `stale`, and
 `cancelled`.
 
-Workers self-check their output. Mechanical validation checks schemas, artifact
-IDs, dependencies, and allowed transitions. Evidence, conflict decisions, and
-the final brief additionally receive independent review tasks. The team lead
-accepts or rejects the reviewed output.
+Workers propose bounded outputs. Mechanical validation checks schemas, artifact
+IDs, dependencies, and allowed transitions. Tasks explicitly marked
+`review_required` pause in `awaiting_review`; the scheduler approves them. The
+team lead plans or re-forms work but never accepts it directly.
 
-If a lease expires, the scheduler reassigns the task once. A second failure
-marks it blocked and creates lead-review work. New contradictory evidence is
-stored without overwriting prior evidence. The lead queues `resolve_conflict`;
-only that task's verdict marks dependent claims or drafts stale and creates
-focused revision tasks.
+If a lease expires or the runner observes a nonzero worker exit, the scheduler
+reassigns the task once. A second operational failure marks it blocked and
+creates lead-review work. A semantic completion failure goes directly to review;
+the review must re-form and requeue that same task. New contradictory evidence
+is stored without overwriting prior evidence. A completed conflict verdict names
+the affected work; only those tasks become stale and receive focused revisions.
 
 ## Research-brief trace
 
