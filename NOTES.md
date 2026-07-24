@@ -65,9 +65,21 @@ choices rather than trying to be separate broad areas of depth.
 
 ## Scope cuts and what I would build next
 
-- **Dynamic skill discovery:** this is the first feature I would add. Remove
-  the fixed worker profiles and let an agent inspect a skill catalog, choose
-  the skills that fit its assigned task, and record that choice in the task
+- **Goal-level verification:** this is the first feature I would add. Today,
+  the run stops when every planned task is finished; it does not prove that the
+  final brief answers the original request. Add a final lead or reviewer task
+  that receives the original request, a compact task-status summary, and
+  read-only access to the final brief and supporting artifacts. It must either
+  accept the result, create narrowly scoped revision tasks, or mark the run
+  blocked. Limit review cycles so a run cannot loop forever. A coding-agent
+  hallucination caused this feature to be missed: it assumed that exhausting
+  the task graph verified the original goal. I discovered the omission during
+  code review and while taking these notes. The original intent was an
+  orchestrator-style lead agent that verified previous steps before accepting
+  the final result.
+- **Dynamic skill discovery:** remove the fixed worker profiles and let an
+  agent inspect a skill catalog, choose the skills that fit its assigned task,
+  and record that choice in the task
   handoff. Keep simple task-level limits and an allowlist for sensitive tools,
   but do not require a code change just to support a new combination of skills.
 - **Citation-grade briefs:** persist source metadata and exact supporting
