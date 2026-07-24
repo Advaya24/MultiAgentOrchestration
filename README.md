@@ -74,19 +74,6 @@ retains the underlying structured values, including time-to-first-token.
 latest `research_brief` artifact, so it can be opened directly without reading
 YAML payload metadata.
 
-## Optional standalone example
-
-With `GEMINI_API_KEY` in a local `.env` file, run:
-
-```sh
-.venv/bin/python -m examples.base_agent "Explain agent handoffs in two sentences."
-.venv/bin/python -m examples.base_agent --provider mistral "Explain agent handoffs in two sentences."
-```
-
-This optional single-agent example is deliberately outside `src/`; it is not
-used by the task-board system. It has one read-only arXiv MCP tool, launched by
-`uvx` on demand. The task board itself uses `--mode gemini` or `--mode mistral`.
-
 ## Project documents
 
 - [Research brief use case](docs/USE_CASE.md)

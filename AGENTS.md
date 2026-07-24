@@ -10,7 +10,7 @@ This repository is an early scaffold for the multi-agent orchestration exercise.
 
 `.local/Specs.md` is intentionally local and ignored. Do not stage, commit, or change its ignore/tracking status without the user's explicit approval. More generally, do not alter `.gitignore` rules that change a file's tracking visibility without explicit approval.
 
-Place application code in `src/`, grouped by responsibility (for example, `src/agents/`, `src/orchestrator/`, `src/workers/`, and `src/state/`). Put optional standalone demonstrations in `examples/`. Local operator helpers belong in `.local/scripts/`, not the submission surface. Put tests in `tests/`, mirroring source modules, and use `artifacts/` or `logs/` only for reproducible generated run output. Do not commit secrets, virtual environments, caches, or local databases.
+Place application code in `src/`, grouped by responsibility (for example, `src/agents/`, `src/orchestrator/`, `src/workers/`, and `src/state/`). Local operator helpers and experiments belong in `.local/`, not the submission surface. Put tests in `tests/`, mirroring source modules, and use `artifacts/` or `logs/` only for reproducible generated run output. Do not commit secrets, virtual environments, caches, or local databases.
 
 ## Build, Test, and Development Commands
 

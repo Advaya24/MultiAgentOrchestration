@@ -1,6 +1,10 @@
 # Local assignment materials and collaboration history (intentionally untracked)
 .local/
 
+# Local coding-agent skills and lock metadata (not application dependencies)
+.agents/
+skills-lock.json
+
 # Local task-board run output (intentionally untracked)
 runs/
 
