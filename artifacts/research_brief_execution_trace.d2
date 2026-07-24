@@ -7,7 +7,7 @@ request: {
 
 lead: {
   label: "Team lead"
-  shape: person
+  shape: rectangle
 }
 
 plan_task: {
@@ -15,38 +15,33 @@ plan_task: {
   shape: document
 }
 
-discover_a: {
-  label: "T-002 discover_sources\nsearch angle A"
-  shape: document
-}
-
-discover_b: {
-  label: "T-003 discover_sources\nsearch angle B"
+discover: {
+  label: "T-002 discover_sources\ncollect source records"
   shape: document
 }
 
 extract: {
-  label: "T-004 extract_evidence\ncontext: retrieved source IDs"
+  label: "T-003 extract_evidence\ncontext: source artifact IDs"
   shape: document
 }
 
 assess: {
-  label: "T-005 assess_claim\ncontext: evidence IDs only"
+  label: "T-004 assess_claims\ncontext: evidence artifact IDs"
   shape: document
 }
 
-review: {
-  label: "T-006 review_evidence\nindependent high-risk review"
+conflict: {
+  label: "T-005 resolve_conflict\ncontext: assessed claim IDs"
   shape: document
 }
 
-draft: {
-  label: "T-007 draft_brief\ncontext: accepted claim IDs"
+write_brief: {
+  label: "T-006 write_brief\ncontext: conflict-verdict artifact ID"
   shape: document
 }
 
 brief: {
-  label: "Accepted cited brief"
+  label: "Research brief artifact\nrendered as report.md"
   shape: document
 }
 
@@ -61,23 +56,8 @@ evidence: {
 }
 
 claims: {
-  label: "Accepted claim artifacts"
+  label: "Assessed-claim artifacts"
   shape: stored_data
-}
-
-late_evidence: {
-  label: "Late contradictory\nevidence artifact"
-  shape: stored_data
-}
-
-conflict: {
-  label: "T-008 resolve_conflict\npreserve both records"
-  shape: document
-}
-
-revision: {
-  label: "T-009 revise_artifact\nonly affected claim and draft"
-  shape: document
 }
 
 failure: {
@@ -86,31 +66,23 @@ failure: {
 }
 
 blocked: {
-  label: "T-010 lead_review\nsecond failure blocks task"
+  label: "lead_review\nsecond failure blocks task"
   shape: document
 }
 
 request -> lead
 lead -> plan_task
-plan_task -> discover_a
-plan_task -> discover_b
-discover_a -> candidate_sources
-discover_b -> candidate_sources
+plan_task -> discover
+discover -> candidate_sources
 candidate_sources -> extract
 extract -> evidence
 evidence -> assess
-assess -> review
-review -> claims
-claims -> draft
-draft -> brief
+assess -> claims
+claims -> conflict
+conflict -> write_brief
+write_brief -> brief
 
-discover_a -> failure: worker dies {style.stroke-dash: 3}
-failure -> discover_a: one reassignment {style.stroke-dash: 3}
+discover -> failure: worker dies {style.stroke-dash: 3}
+failure -> discover: one reassignment {style.stroke-dash: 3}
 failure -> blocked: second failure {style.stroke-dash: 3}
 blocked -> lead
-
-late_evidence -> conflict: opens review {style.stroke-dash: 3}
-claims -> conflict: affected claim reference {style.stroke-dash: 3}
-conflict -> revision: stale dependency only {style.stroke-dash: 3}
-revision -> claims: superseding claim {style.stroke-dash: 3}
-revision -> draft: revise brief {style.stroke-dash: 3}

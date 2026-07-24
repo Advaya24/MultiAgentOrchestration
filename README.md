@@ -7,20 +7,7 @@ dependency-aware tasks. Workers exchange named artifacts rather than sharing a
 growing conversation.
 
 ```text
-request
-  │
-  ▼
-team lead ──proposes plan──► scheduler / task queue
-                                  │
-                     claims ready tasks (in parallel)
-                                  ▼
-                         short-lived workers
-                                  │
-                     completion proposals + artifacts
-                                  ▼
-                         scheduler validates,
-                      records state, and unblocks
-                         dependent tasks / report
+request → lead plans → scheduler queue → parallel workers → artifacts / brief
 ```
 
 The scheduler is the only writer of durable task state. Each worker receives a

@@ -6,8 +6,8 @@ request: {
 }
 
 team_lead: {
-  label: "Team lead\nprioritize, validate, create work"
-  shape: person
+  label: "Team lead\nproposes bounded plans or task reforms"
+  shape: rectangle
 }
 
 scheduler: {
@@ -26,7 +26,7 @@ board: {
 }
 
 capabilities: {
-  label: "Capability registry\npersona, skills, tools, context budget"
+  label: "Fixed capability registry\nprofiles, skills, tools, context budget"
   shape: document
 }
 
@@ -36,17 +36,12 @@ worker_pool: {
 }
 
 artifacts: {
-  label: "Immutable artifact store\nevidence, claims, drafts, reviews"
+  label: "Immutable artifact store\nsources, evidence, claims, reports"
   shape: stored_data
 }
 
-mechanical_checks: {
-  label: "Mechanical checks\nschema, IDs, dependencies"
-  shape: rectangle
-}
-
 review_tasks: {
-  label: "Risk-based review tasks\nevidence, conflicts, final brief"
+  label: "Blocked-task lead review\nre-form one failed task"
   shape: rectangle
 }
 
@@ -61,20 +56,17 @@ revision: {
 }
 
 request -> team_lead: opens run
-team_lead -> scheduler: admits and prioritizes work
-team_lead -> task_files: creates tasks
+team_lead -> scheduler: proposes plan or reform
 scheduler -> task_files: single-writer updates
 task_files -> board: renders status
 task_files -> worker_pool: ready task envelope
 capabilities -> worker_pool: selects profile
 worker_pool -> scheduler: claim or completion proposal
-worker_pool -> artifacts: immutable output
-artifacts -> mechanical_checks: validate output contract
-mechanical_checks -> review_tasks: high-risk artifacts
-review_tasks -> team_lead: accept or revise
-team_lead -> scheduler: accept, block, or enqueue follow-up
+scheduler -> artifacts: accepted immutable output
+scheduler -> review_tasks: blocked task or invalid completion
+review_tasks -> team_lead: reform request
 scheduler -> recovery: expired lease
-recovery -> task_files: reassignment or blocked task
+recovery -> scheduler: reassign or block
 artifacts -> revision: new contradictory evidence
 revision -> task_files: conflict and revision tasks
 revision -> artifacts: preserve provenance
