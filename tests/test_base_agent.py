@@ -1,4 +1,4 @@
-"""Deterministic checks for the base-agent command boundary."""
+"""Deterministic checks for the optional standalone example."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import sys
 
 import pytest
 
-from src.agents import base_agent
+from examples import base_agent
 
 
 def test_main_requires_a_prompt(monkeypatch: pytest.MonkeyPatch) -> None:

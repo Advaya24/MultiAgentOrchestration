@@ -22,9 +22,6 @@ dev = [
     "pytest>=8.0,<9",
 ]
 
-[project.scripts]
-base-agent = "src.agents.base_agent:main"
-
 [tool.setuptools]
 packages = ["src", "src.agents", "src.orchestrator", "src.state", "src.workers"]
 

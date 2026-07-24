@@ -1,34 +1,19 @@
 # Gemini Integration Reference
 
-`scripts/gemini_example.py` demonstrates a possible model integration for the solution phase.
+Gemini is used through Strands' `GeminiModel`, not a separate direct-SDK
+prototype. Both workers and the team lead default to `gemini-3.5-flash-lite`;
+set `GEMINI_MODEL` locally to override it. Authentication is read only from
+`GEMINI_API_KEY` in the environment or ignored `.env` file.
 
-## Available Capabilities
+Workers receive only their profile's explicit tools. Web-discovery workers use
+the sandboxed `ddg_web_search` and `web_fetch` tools; no generic search or
+filesystem tool is exposed. The team lead has no model-callable tools.
 
-- Python client: `google-genai`
-- Credential: `GEMINI_API_KEY`
-- Model in the example: `models/gemini-3-flash-preview`
-- External web discovery: sandboxed `ddg-search` CLI exposed as an explicit
-  Strands Python tool
-- Generation controls: temperature, output-token limit, top-p, and thinking level
+Run the live board with:
 
-## Example Shape
-
-```python
-from google import genai
-
-client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-interaction = client.interactions.create(
-    model="models/gemini-3-flash-preview",
-    input="<research request>",
-    tools=[ddg_web_search],
-    generation_config={...},
-)
+```sh
+.venv/bin/python -m src.cli run --request-file request.md --mode gemini
 ```
 
-The example prints the final interaction step. It is a starting point, not a committed solution design.
-
-## Before Implementation
-
-- Confirm the supported Gemini model and SDK API at implementation time; the example uses a preview model.
-- Decide how retrieved sources, citations, and tool output will be retained for reproducible runs.
-- Keep `GEMINI_API_KEY` local; do not commit it.
+The durable task and artifact contracts, plus local OTel tracing, are described
+in [Strands Implementation Contract](STRANDS_IMPLEMENTATION.md).

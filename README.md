@@ -74,23 +74,18 @@ retains the underlying structured values, including time-to-first-token.
 latest `research_brief` artifact, so it can be opened directly without reading
 YAML payload metadata.
 
-## Try the base agent
+## Optional standalone example
 
 With `GEMINI_API_KEY` in a local `.env` file, run:
 
 ```sh
-.venv/bin/python -m src.agents.base_agent "Explain agent handoffs in two sentences."
-.venv/bin/python -m src.agents.base_agent --provider mistral "Explain agent handoffs in two sentences."
+.venv/bin/python -m examples.base_agent "Explain agent handoffs in two sentences."
+.venv/bin/python -m examples.base_agent --provider mistral "Explain agent handoffs in two sentences."
 ```
 
-This is a single Strands agent backed by Gemini by default, or Mistral when
-`--provider mistral` is supplied. It has one read-only arXiv
-MCP tool: `arxiv_search_papers`. The server is started locally by `uvx` on
-demand. It has no state store or multi-agent orchestration yet. Set
-`GEMINI_MODEL` locally to override the default `gemini-3.5-flash-lite` model.
-For the task board, `--mode mistral` selects Mistral instead; optionally set
-`MISTRAL_MODEL` (default: `mistral-small-2506`). Gemini remains the default
-live-provider choice when using `--mode gemini`.
+This optional single-agent example is deliberately outside `src/`; it is not
+used by the task-board system. It has one read-only arXiv MCP tool, launched by
+`uvx` on demand. The task board itself uses `--mode gemini` or `--mode mistral`.
 
 ## Project documents
 

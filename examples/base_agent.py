@@ -1,8 +1,8 @@
-"""Run a minimal Strands agent backed by Gemini or Mistral.
+"""Optional minimal Strands agent, independent of the task-board application.
 
 Usage:
-    .venv/bin/python -m src.agents.base_agent "Explain what agent handoffs are."
-    .venv/bin/python -m src.agents.base_agent --provider mistral "Explain what agent handoffs are."
+    .venv/bin/python -m examples.base_agent "Explain what agent handoffs are."
+    .venv/bin/python -m examples.base_agent --provider mistral "Explain what agent handoffs are."
 """
 
 from __future__ import annotations
@@ -58,12 +58,7 @@ def build_agent(provider: str = "gemini") -> Agent:
         prefix="arxiv",
     )
 
-    return Agent(
-        model=model,
-        system_prompt=SYSTEM_PROMPT,
-        callback_handler=None,
-        tools=[arxiv_client],
-    )
+    return Agent(model=model, system_prompt=SYSTEM_PROMPT, callback_handler=None, tools=[arxiv_client])
 
 
 def main() -> None:
@@ -76,7 +71,7 @@ def main() -> None:
         arguments = arguments[2:]
     prompt = " ".join(arguments).strip()
     if not prompt:
-        raise SystemExit('Usage: .venv/bin/python -m src.agents.base_agent [--provider gemini|mistral] "Your prompt"')
+        raise SystemExit('Usage: .venv/bin/python -m examples.base_agent [--provider gemini|mistral] "Your prompt"')
 
     result = build_agent(provider)(prompt)
     print(result)
